@@ -1,0 +1,25 @@
+SHELL := /bin/zsh
+
+BIN_NAME := ssh-manager
+INSTALL_DIR := $(HOME)/.local/bin
+VERSION := $(shell cat VERSION 2>/dev/null || echo dev)
+LDFLAGS := -X 'ssh-manager/cmd.Version=$(VERSION)'
+
+.PHONY: install upgrade version
+
+install:
+	@mkdir -p "$(INSTALL_DIR)"
+	@go build -ldflags "$(LDFLAGS)" -o "$(INSTALL_DIR)/$(BIN_NAME)" .
+	@if ! grep -Fq 'export PATH="$$HOME/.local/bin:$$PATH"' "$$HOME/.zshrc"; then \
+		echo 'export PATH="$$HOME/.local/bin:$$PATH"' >> "$$HOME/.zshrc"; \
+		echo "Added ~/.local/bin to ~/.zshrc PATH"; \
+	fi
+	@source "$$HOME/.zshrc" >/dev/null 2>&1 || true
+	@echo "Installed $(BIN_NAME) $(VERSION) to $(INSTALL_DIR)"
+	@echo "PATH updated in ~/.zshrc if needed"
+
+upgrade: install
+	@echo "Upgrade complete: $(BIN_NAME) $(VERSION)"
+
+version:
+	@echo "$(VERSION)"

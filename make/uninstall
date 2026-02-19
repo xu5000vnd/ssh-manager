@@ -1,0 +1,19 @@
+SHELL := /bin/zsh
+
+BIN_NAME := ssh-manager
+INSTALL_DIR := $(HOME)/.local/bin
+
+.PHONY: uninstall
+
+uninstall:
+	@rm -f "$(INSTALL_DIR)/$(BIN_NAME)"
+	@rm -f "$(HOME)/Library/Application Support/ssh-manager/config.enc" \
+		"$(HOME)/Library/Application Support/ssh-manager/config.enc.1" \
+		"$(HOME)/Library/Application Support/ssh-manager/config.enc.2" \
+		"$(HOME)/Library/Application Support/ssh-manager/config.enc.3"
+	@rm -f "$(HOME)/.config/ssh-manager/config.enc" \
+		"$(HOME)/.config/ssh-manager/config.enc.1" \
+		"$(HOME)/.config/ssh-manager/config.enc.2" \
+		"$(HOME)/.config/ssh-manager/config.enc.3"
+	@echo "Removed $(BIN_NAME) from $(INSTALL_DIR)"
+	@echo "Deleted local encrypted data (if present)"

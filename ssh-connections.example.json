@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "connections": [
+    {
+      "id": "0b2f90be-2ca3-4b87-9e5f-7c95e6a4b7d1",
+      "name": "prod-app",
+      "group": "production",
+      "host": "203.0.113.10",
+      "port": 22,
+      "username": "ubuntu",
+      "key_path": "~/.ssh/id_ed25519",
+      "proxy_jump": "bastion_user@bastion.example.com",
+      "extra_args": "-L 8080:localhost:80",
+      "tags": "prod,app",
+      "notes": "Main production app node",
+      "favorite": true,
+      "connect_count": 12,
+      "last_connected_at": "2026-02-19T10:30:00Z"
+    },
+    {
+      "id": "a9cf6a10-8fd5-4900-8968-bfb7ea777384",
+      "name": "staging-db",
+      "group": "staging",
+      "host": "198.51.100.25",
+      "port": 2222,
+      "username": "ec2-user",
+      "key_path": "~/.ssh/staging.pem",
+      "tags": "staging,db",
+      "notes": "Read-only access",
+      "favorite": false,
+      "connect_count": 3,
+      "last_connected_at": "2026-02-10T02:15:00Z"
+    }
+  ]
+}
