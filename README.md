@@ -1,4 +1,6 @@
-# SSH Management
+# SSH Manager
+
+![Demo](assets/demo.png)
 
 Encrypted SSH connection manager with:
 - TUI unlock + connection list + direct connect
@@ -21,7 +23,7 @@ go build -o ssh-manager .
 
 This repo uses custom make files under `make/`.
 
-Install:
+Install (global command):
 
 ```bash
 cd ~/ssh-manager
@@ -46,6 +48,7 @@ Or from anywhere:
 
 ```bash
 ssh-manager uninstall
+ssh-manager uninstall --force
 ```
 
 What install does:
@@ -72,6 +75,13 @@ or from source:
 ```bash
 cd ~/ssh-manager
 go run .
+```
+
+Check version:
+
+```bash
+ssh-manager -v
+ssh-manager --version
 ```
 
 ## UX Flow (Current)
@@ -110,6 +120,10 @@ ssh-manager export-ssh-config -o ./ssh_config_export
 ssh-manager password
 ssh-manager reset-all
 ssh-manager reset-all --force
+ssh-manager uninstall
+ssh-manager uninstall --force
+ssh-manager upgrade
+ssh-manager upgrade --source /path/to/ssh-manager
 ```
 
 For automation, you can pass password using env var:
@@ -117,6 +131,10 @@ For automation, you can pass password using env var:
 ```bash
 SSH_MANAGER_PASSWORD='your-password' ssh-manager list
 ```
+
+Password prompt behavior:
+- CLI password prompts are hidden (not echoed).
+- In TUI, password input is masked.
 
 ## Config Location
 
@@ -133,7 +151,7 @@ Backup files are rotated automatically:
 
 ## Reset / Cleanup
 
-Clear all connections (keep encrypted config file + password):
+Clear all connections (keep installed app + empty encrypted config):
 
 ```bash
 ssh-manager reset-all
@@ -146,6 +164,15 @@ rm -f "$HOME/Library/Application Support/ssh-manager/config.enc" \
       "$HOME/Library/Application Support/ssh-manager/config.enc.1" \
       "$HOME/Library/Application Support/ssh-manager/config.enc.2" \
       "$HOME/Library/Application Support/ssh-manager/config.enc.3"
+```
+
+Windows manual cleanup:
+
+```powershell
+Remove-Item "$env:APPDATA\ssh-manager\config.enc",
+            "$env:APPDATA\ssh-manager\config.enc.1",
+            "$env:APPDATA\ssh-manager\config.enc.2",
+            "$env:APPDATA\ssh-manager\config.enc.3" -Force -ErrorAction SilentlyContinue
 ```
 
 ## Security Notes
