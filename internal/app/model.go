@@ -22,6 +22,7 @@ const (
 	ScreenImport
 	ScreenExport
 	ScreenPassword
+	ScreenConnectLog
 )
 
 type autoLockMsg struct {
@@ -41,6 +42,10 @@ type Model struct {
 	SelectedIndex  int
 	ActivityToken  int
 	ConnectArgs    []string
+	ConnectLogs    []string
+	ConnectErr     string
+	Connecting     bool
+	PreflightOK    bool
 }
 
 func NewModel() (Model, error) {

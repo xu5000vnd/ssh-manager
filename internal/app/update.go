@@ -30,6 +30,32 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 		m.ActivityToken++
+	case connectResultMsg:
+		m.Connecting = false
+		m.ConnectLogs = msg.Logs
+		if msg.Err != nil {
+			m.PreflightOK = false
+			m.ConnectErr = msg.Err.Error()
+			m.Status = "Preflight failed. Check logs and press Esc to return."
+			return m, m.lockTickCmd(m.ActivityToken)
+		}
+
+		m.PreflightOK = true
+		m.ConnectErr = ""
+		m.Status = "Preflight successful. Starting SSH session..."
+		if m.Config == nil || len(m.Config.Connections) == 0 {
+			m.Status = "No connection to connect"
+			return m, m.lockTickCmd(m.ActivityToken)
+		}
+		conn := m.Config.Connections[m.SelectedIndex]
+		conn.ConnectCount++
+		conn.LastConnectedAt = time.Now().Format(time.RFC3339)
+		m.Config.Connections[m.SelectedIndex] = conn
+		if err := config.Save(m.Config, m.Path, m.Password); err != nil {
+			m.Status = "Failed to save: " + err.Error()
+			return m, m.lockTickCmd(m.ActivityToken)
+		}
+		return m, tea.Quit
 	}
 
 	if m.Screen == ScreenUnlock {
@@ -91,7 +117,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if km, ok := msg.(tea.KeyMsg); ok {
 		if km.String() == "esc" {
-			m.Screen = ScreenHome
+			if m.Screen == ScreenConnectLog {
+				m.Screen = ScreenHome
+				m.Connecting = false
+				m.ConnectErr = ""
+				m.PreflightOK = false
+			} else {
+				m.Screen = ScreenHome
+			}
 			return m, m.lockTickCmd(m.ActivityToken)
 		}
 		if m.Screen == ScreenHome {
@@ -110,16 +143,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, m.lockTickCmd(m.ActivityToken)
 				}
 				conn := m.Config.Connections[m.SelectedIndex]
-				conn.ConnectCount++
-				conn.LastConnectedAt = time.Now().Format(time.RFC3339)
-				m.Config.Connections[m.SelectedIndex] = conn
-				if err := config.Save(m.Config, m.Path, m.Password); err != nil {
-					m.Status = "Failed to save: " + err.Error()
-					return m, m.lockTickCmd(m.ActivityToken)
-				}
+				m.Screen = ScreenConnectLog
+				m.Connecting = true
+				m.PreflightOK = false
+				m.ConnectErr = ""
+				m.ConnectLogs = []string{"Starting SSH preflight..."}
 				m.ConnectArgs = sshcmd.BuildCommand(conn)
-				return m, tea.Quit
+				m.Status = "Collecting SSH logs..."
+				return m, tea.Batch(runConnectPreflight(conn), m.lockTickCmd(m.ActivityToken))
 			}
+		}
+		if m.Screen == ScreenConnectLog {
+			return m, m.lockTickCmd(m.ActivityToken)
 		}
 	}
 
