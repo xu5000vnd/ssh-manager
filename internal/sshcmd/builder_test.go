@@ -15,6 +15,9 @@ func TestBuildCommandBasic(t *testing.T) {
 	if !strings.Contains(joined, "ssh") || !strings.Contains(joined, "alice@example.com") {
 		t.Fatalf("unexpected command: %v", args)
 	}
+	if !strings.Contains(joined, "-o IdentitiesOnly=yes") {
+		t.Fatalf("expected identities-only option: %v", args)
+	}
 }
 
 func TestBuildCommandWithProxyJump(t *testing.T) {

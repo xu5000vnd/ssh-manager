@@ -11,6 +11,7 @@ import (
 
 func BuildCommand(conn config.Connection) []string {
 	args := []string{"ssh"}
+	args = append(args, "-o", "IdentitiesOnly=yes")
 
 	if conn.ProxyJump != "" {
 		args = append(args, "-J", conn.ProxyJump)
