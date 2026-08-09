@@ -21,20 +21,10 @@ type connectResultMsg struct {
 
 func runConnectPreflight(conn config.Connection) tea.Cmd {
 	return func() tea.Msg {
-		base := sshcmd.BuildCommand(conn)
-		if len(base) < 2 {
-			return connectResultMsg{Err: errors.New("invalid ssh command")}
+		args, err := connectPreflightArgs(conn)
+		if err != nil {
+			return connectResultMsg{Err: err}
 		}
-
-		// Preflight runs a non-interactive verbose SSH probe so user can see progress logs.
-		args := []string{
-			"-v",
-			"-o", "BatchMode=yes",
-			"-o", "ConnectTimeout=8",
-			"-o", "NumberOfPasswordPrompts=0",
-		}
-		args = append(args, base[1:]...)
-		args = append(args, "exit")
 
 		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
@@ -69,3 +59,22 @@ func runConnectPreflight(conn config.Connection) tea.Cmd {
 	}
 }
 
+func connectPreflightArgs(conn config.Connection) ([]string, error) {
+	base := sshcmd.BuildCommand(conn)
+	if len(base) < 2 {
+		return nil, errors.New("invalid ssh command")
+	}
+
+	// Preflight runs a non-interactive verbose SSH probe so user can see progress logs.
+	args := []string{
+		"-v",
+		"-o", "BatchMode=yes",
+		"-o", "StrictHostKeyChecking=accept-new",
+		"-o", "ConnectTimeout=8",
+		"-o", "NumberOfPasswordPrompts=0",
+	}
+	args = append(args, base[1:]...)
+	args = append(args, "exit")
+
+	return args, nil
+}
